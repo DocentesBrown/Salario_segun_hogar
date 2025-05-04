@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Línea de Pobreza</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            margin-bottom: 10px;
+            display: block;
+            color: #333;
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Calculadora de Línea de Pobreza</h1>
+    <form id="povertyForm">
+        <label for="familySize">Cantidad de integrantes del hogar:</label>
+        <input type="number" id="familySize" min="1" value="1" onchange="generateFamilyInputs()">
+
+        <div id="familyInputs"></div>
+
+        <button type="button" onclick="calculatePoverty()">Calcular</button>
+    </form>
+
+    <div id="result" class="result"></div>
+</div>
+
+<script>
+    const equivalencias = {
+        "0-1": { "Mujeres": 0.35, "Varones": 0.35 },
+        "1": { "Mujeres": 0.37, "Varones": 0.37 },
+        "2": { "Mujeres": 0.46, "Varones": 0.46 },
+        "3": { "Mujeres": 0.51, "Varones": 0.51 },
+        "4": { "Mujeres": 0.55, "Varones": 0.55 },
+        "5": { "Mujeres": 0.60, "Varones": 0.60 },
+        "6": { "Mujeres": 0.64, "Varones": 0.64 },
+        "7": { "Mujeres": 0.66, "Varones": 0.66 },
+        "8": { "Mujeres": 0.68, "Varones": 0.68 },
+        "9": { "Mujeres": 0.69, "Varones": 0.69 },
+        "10": { "Mujeres": 0.70, "Varones": 0.79 },
+        "11": { "Mujeres": 0.72, "Varones": 0.82 },
+        "12": { "Mujeres": 0.74, "Varones": 0.85 },
+        "13": { "Mujeres": 0.76, "Varones": 0.90 },
+        "14": { "Mujeres": 0.76, "Varones": 0.96 },
+        "15": { "Mujeres": 0.77, "Varones": 1.00 },
+        "16": { "Mujeres": 0.77, "Varones": 1.03 },
+        "17": { "Mujeres": 0.77, "Varones": 1.04 },
+        "18-29": { "Mujeres": 0.76, "Varones": 1.02 },
+        "30-45": { "Mujeres": 0.77, "Varones": 1.00 },
+        "46-60": { "Mujeres": 0.76, "Varones": 1.00 },
+        "61-75": { "Mujeres": 0.67, "Varones": 0.83 },
+        "75+": { "Mujeres": 0.63, "Varones": 0.74 }
+    };
+
+    const CBT = 356073.46; // Valor de la Canasta Básica Total (CBT)
+
+    function generateFamilyInputs() {
+        let familySize = document.getElementById("familySize").value;
+        let familyInputsDiv = document.getElementById("familyInputs");
+        familyInputsDiv.innerHTML = '';
+
+        for (let i = 0; i < familySize; i++) {
+            let div = document.createElement("div");
+            div.innerHTML = `
+                <label>Integrante ${i + 1} - Edad:</label>
+                <input type="number" min="0" id="age${i}" placeholder="Edad del integrante ${i + 1}">
+                <label>Género:</label>
+                <select id="gender${i}">
+                    <option value="Mujeres">Mujer</option>
+                    <option value="Varones">Varón</option>
+                </select>
+            `;
+            familyInputsDiv.appendChild(div);
+        }
+    }
+
+    function calculatePoverty() {
+        let familySize = document.getElementById("familySize").value;
+        let totalAE = 0;
+
+        for (let i = 0; i < familySize; i++) {
+            let age = document.getElementById(`age${i}`).value;
+            let gender = document.getElementById(`gender${i}`).value;
+
+            let AE = 0;
+
+            // Encontrar el rango de edad correspondiente
+            if (age < 1) AE = equivalencias["0-1"][gender];
+            else if (age == 1) AE = equivalencias["1"][gender];
+            else if (age == 2) AE = equivalencias["2"][gender];
+            else if (age == 3) AE = equivalencias["3"][gender];
+            else if (age == 4) AE = equivalencias["4"][gender];
+            else if (age == 5) AE = equivalencias["5"][gender];
+            else if (age == 6) AE = equivalencias["6"][gender];
+            else if (age == 7) AE = equivalencias["7"][gender];
+            else if (age == 8) AE = equivalencias["8"][gender];
+            else if (age == 9) AE = equivalencias["9"][gender];
+            else if (age == 10) AE = equivalencias["10"][gender];
+            else if (age == 11) AE = equivalencias["11"][gender];
+            else if (age == 12) AE = equivalencias["12"][gender];
+            else if (age == 13) AE = equivalencias["13"][gender];
+            else if (age == 14) AE = equivalencias["14"][gender];
+            else if (age == 15) AE = equivalencias["15"][gender];
+            else if (age == 16) AE = equivalencias["16"][gender];
+            else if (age == 17) AE = equivalencias["17"][gender];
+            else if (age >= 18 && age <= 29) AE = equivalencias["18-29"][gender];
+            else if (age >= 30 && age <= 45) AE = equivalencias["30-45"][gender];
+            else if (age >= 46 && age <= 60) AE = equivalencias["46-60"][gender];
+            else if (age >= 61 && age <= 75) AE = equivalencias["61-75"][gender];
+            else AE = equivalencias["75+"][gender];
+
+            totalAE += AE;
+        }
+
+        let totalIncome = totalAE * CBT;
+        document.getElementById("result").innerHTML = `Total de Adultos Equivalentes: ${totalAE.toFixed(2)}<br>El hogar necesita ganar: $${totalIncome.toFixed(2)} para no estar bajo la línea de pobreza.`;
+    }
+</script>
+
+</body>
+</html>
